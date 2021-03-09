@@ -19,8 +19,8 @@ Or you can download source manually and copy `src/*` into somewhere on your `pac
 	print(lunajson.encode(t)) -- prints {"Hello":["lunajson",1.5]}
 
 ## API
-### lunajson.decode(jsonstr, [pos, [nullv, [arraylen]]])
-Decode `jsonstr`. If `pos` is specified, it starts decoding from `pos` until the JSON definition ends, otherwise the entire input is parsed as JSON. `null` inside `jsonstr` will be decoded as the optional sentinel value `nullv` if specified, and discarded otherwise. If `arraylen` is true, the length of an array `ary` will be stored in `ary[0]`. This behavior is useful when empty arrays should not be confused with empty objects.
+### lunajson.decode(jsonstr, [pos, [nullv, [arraylen, [arraybaseindex]]]])
+Decode `jsonstr`. If `pos` is specified, it starts decoding from `pos` until the JSON definition ends, otherwise the entire input is parsed as JSON. `null` inside `jsonstr` will be decoded as the optional sentinel value `nullv` if specified, and discarded otherwise. If `arraylen` is true, the length of an array `ary` will be stored in `ary[0]`. This behavior is useful when empty arrays should not be confused with empty objects. If `arraybaseindex` is set with an integer, it will be used as the base index of the array. In this case, when `arraylen` is true, the length of the array will be stored in `ary[arraybaseindex-1]`). The default index for arrays is 1.
 
 This function returns the decoded value if `jsonstr` contains valid JSON,  otherwise an error will be raised. If `pos` is specified it also returns the position immediately after the end of decoded JSON.
 
