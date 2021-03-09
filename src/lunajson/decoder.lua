@@ -23,7 +23,7 @@ local _ENV = nil
 
 
 local function newdecoder()
-	local json, pos, nullv, arraylen, rec_depth
+	local json, pos, nullv, arraylen, rec_depth, array_index_base
 
 	-- `f` is the temporary for dispatcher[c] and
 	-- the dummy for the first return value of `find`
@@ -371,17 +371,19 @@ local function newdecoder()
 
 		pos = match(json, '^[ \n\r\t]*()', pos)
 
-		local i = 0
+		local i = array_index_base
+		local len = 0
 		if byte(json, pos) == 0x5D then  -- check closing bracket ']' which means the array empty
 			pos = pos+1
 		else
 			local newpos = pos
 			repeat
-				i = i+1
+				len = len + 1
 				f = dispatcher[byte(json,newpos)]  -- parse value
 				pos = newpos+1
 				ary[i] = f()
 				newpos = match(json, '^[ \n\r\t]*,[ \n\r\t]*()', pos)  -- check comma
+				i = i + 1
 			until not newpos
 
 			newpos = match(json, '^[ \n\r\t]*%]()', pos)  -- check closing bracket
@@ -392,7 +394,7 @@ local function newdecoder()
 		end
 
 		if arraylen then -- commit the length of the array if `arraylen` is set
-			ary[0] = i
+			ary[array_index_base-1] = len
 		end
 		rec_depth = rec_depth - 1
 		return ary
@@ -488,11 +490,15 @@ local function newdecoder()
 	--[[
 		run decoder
 	--]]
-	local function decode(json_, pos_, nullv_, arraylen_)
-		json, pos, nullv, arraylen = json_, pos_, nullv_, arraylen_
+	local function decode(json_, pos_, nullv_, arraylen_, array_index_base_)
+		json, pos, nullv, arraylen, array_index_base = json_, pos_, nullv_, arraylen_, array_index_base_
 		rec_depth = 0
 
 		pos = match(json, '^[ \n\r\t]*()', pos)
+
+		if type(array_index_base) ~= 'number' then
+			array_index_base = 1 -- Default to 1
+		end
 
 		f = dispatcher[byte(json, pos)]
 		pos = pos+1
